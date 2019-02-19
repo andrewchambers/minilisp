@@ -1,27 +1,26 @@
-#! /usr/bin/env bash
+#!/bin/sh
 
-function fail() {
-  echo -n -e '\e[1;31m[ERROR]\e[0m '
-  echo "$1"
+fail() {
+  printf '\33[1;31m[ERROR]\33[0m %s\n' "$1"
   exit 1
 }
 
-function do_run() {
+do_run() {
   error=$(echo "$3" | ./minilisp 2>&1 > /dev/null)
   if [ -n "$error" ]; then
     echo FAILED
     fail "$error"
   fi
 
-  result=$(echo "$3" | ./minilisp 2> /dev/null | tail -1)
+  result=$(echo "$3" | ./minilisp 2> /dev/null | tail -n 1)
   if [ "$result" != "$2" ]; then
     echo FAILED
     fail "$2 expected, but got $result"
   fi
 }
 
-function run() {
-  echo -n "Testing $1 ... "
+run() {
+  printf "Testing %s ... " "$1"
   # Run the tests twice to test the garbage collector with different settings.
   MINILISP_ALWAYS_GC= do_run "$@"
   MINILISP_ALWAYS_GC=1 do_run "$@"
